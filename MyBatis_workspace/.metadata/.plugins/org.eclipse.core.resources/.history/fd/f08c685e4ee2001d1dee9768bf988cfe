@@ -1,0 +1,21 @@
+package com.kh.mybatis.member.model.service;
+
+import com.kh.mybatis.member.model.dao.MemberDao;
+import com.kh.mybatis.member.model.vo.Member;
+
+public class MemberService {
+	
+	private MemberDao memberDao = new MemberDao();
+	
+	
+	public Member loginMember(Member m) {
+		//connection 객체 반환
+		
+		Member loginUser = memberDao.loginMember( , m);
+		//new MemebrDao()를 하지 않는 이유 => mappers에서 xml을 불러들이고 있기때문에
+		
+		//객체반환
+		
+		return loginUser;
+	}
+}

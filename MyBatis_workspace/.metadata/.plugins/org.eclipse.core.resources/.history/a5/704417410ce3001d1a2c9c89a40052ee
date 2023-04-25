@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="boardMapper">
+
+<!-- 
+	resultMap type이 board인 하나 생성하고
+	
+	select id값이 selectListCount, selectList 태그 2개 만들기
+	
+ -->
+ 
+	 <resultMap type="board" id="boardResultSet">
+		<!--  <id column="BOARD_NO" property="boardNo"/> => -->
+	 	<result column="BOARD_NO" property="boardNo"/>
+	 	<result column="BOARD_TITLE" property="boardTitle"/>
+	 	<result column="BOARD_CONTENT" property="boardContent"/>
+	 	<result column="USER_NAME" property="boardWriter"/>
+	 	<result column="COUNT" property="count"/>
+	 	<result column="CREATE_DATE" property="createDate"/>
+	 </resultMap>
+	
+
+	<!--parameterType은 둘다 생략가능  -->
+	<select id="selectListCount" resultType="int">
+		SELECT COUNT(*)
+		FROM BOARD
+		WHERE STATUS = 'Y'
+	</select>
+
+	<select id="selectList" resultMap="boardResultSet">
+		SELECT *
+		FROM BOARD B
+		JOIN MEMBER ON(BOARD_WRITER = USER_NO)
+		WHERE B.STATUS='Y'
+		ORDER BY BOARD_NO DESC
+	</select>
+	
+	<update id="increaseCount" parameterType="int" >
+		UPDATE BOARD
+		SET COUNT = COUNT +1
+		WHERE BOARD_NO = #{boardNo} AND STATUS = 'Y'
+	</update>
+	
+	<select id="selectBoard" parameterType="board" resultMap="boardResultSet">
+	   SELECT B.*
+	   FROM BOARD B
+	   JOIN MEMBER M ON(B.BOARD_WRITER = M.USER_NO)
+	   WHERE B.STATUS='Y' AND B.BOARD_NO=#{boardNo};
+	</select>
+	
+	<resultMap type="reply" id="replyResultSet">
+		<result column="REPLY_NO" property="replyNo"/>
+		<result column="REPLY_CONTENT" property="replyContent"/>
+		<result column="REPLY_BNO" property="replyBno"/>
+		<result column="REPLY_WRITER" property="replyWriter"/>
+		<result column="CREATE_DATE" property="createDate"/>
+		<result column="STATUS" property="status"/>
+	</resultMap>
+	
+	<select id="selectReplyList" resultMap="replyResultSet" parameterType="reply">
+          SELECT R.*
+          FROM REPLY R
+          WHERE R.STATUS='Y' AND R.REF_BNO=#{boardNo} 
+	</select>	
+
+</mapper>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="boardMapper">
+
+<!-- 
+   resultMap type이 board인 하나 생성하고
+   
+   select id값이 selectListCount, selectList 태그 2개 만들기
+   
+ -->
+ 
+    <resultMap type="board" id="boardResultSet">
+      <!--  <id column="BOARD_NO" property="boardNo"/> => -->
+       <result column="BOARD_NO" property="boardNo"/>
+       <result column="BOARD_TITLE" property="boardTitle"/>
+       <result column="BOARD_CONTENT" property="boardContent"/>
+       <result column="USER_NAME" property="boardWriter"/>
+       <result column="COUNT" property="count"/>
+       <result column="CREATE_DATE" property="createDate"/>
+    </resultMap>
+   
+
+   <!--parameterType은 둘다 생략가능  -->
+   <select id="selectListCount" resultType="int">
+      SELECT COUNT(*)
+      FROM BOARD
+      WHERE STATUS = 'Y'
+   </select>
+
+   <select id="selectList" resultMap="boardResultSet">
+      SELECT *
+      FROM BOARD B
+      JOIN MEMBER ON(BOARD_WRITER = USER_NO)
+      WHERE B.STATUS='Y'
+      ORDER BY BOARD_NO DESC
+   </select>
+   
+   <update id="increaseCount" parameterType="board" >
+      UPDATE BOARD
+      SET COUNT = COUNT +1
+      WHERE BOARD_NO = #{boardNo} AND STATUS = 'Y'
+   </update>
+   
+   <!-- select문은 무조건 반환형 필요
+      resultMap혹은 resultType무조건 작성해주기
+      
+      prarmeterType은 매개변수로 들어온게 있는지
+      => 현재 매개변수로 int boardNo받아옴
+    -->
+   <select id="selectBoard" parameterType="board" resultMap="boardResultSet">
+      SELECT B.*
+      FROM BOARD B
+      JOIN MEMBER M ON(B.BOARD_WRITER = M.USER_NO)
+      WHERE B.STATUS='Y' AND B.BOARD_NO=#{boardNo}
+   </select>
+   
+   <resultMap type="reply" id="replyResultSet">
+      <result column="REPLY_NO" property="replyNo"/>
+      <result column="REPLY_CONTENT" property="replyContent"/>
+      <result column="REPLY_BNO" property="replyBno"/>
+      <result column="USER_NAME" property="replyWriter"/>
+      <result column="CREATE_DATE" property="createDate"/>
+      <result column="STATUS" property="status"/>
+   </resultMap>
+   
+   <!--<select id="selectReplyList" resultMap="replyResultSet" parameterType="_int">  -->
+   <select id="selectReplyList" resultMap="replyResultSet" parameterType="reply">
+          SELECT REPLY_NO, REPLY_CONTENT,USER_NAME, CREATE_DATE
+          FROM REPLY R
+          JOIN MEMBER M ON (R.REPLY_WRITER=M.USER_NO)
+          WHERE R.STATUS='Y' AND R.REF_BNO=#{boardNo} 
+          ORDER BY CREATE_DATE DESC
+   </select>   
+   
+   <select id="selectSearchCount" parameterType="hashmap" resultType="int">
+   	  SELECT COUNT(*)
+      FROM BOARD B
+      JOIN MEMBER ON(BOARD_WRITER = USER_NO)
+      WHERE B.STATUS = 'Y'
+      		<if test="condition == 'writer'">
+         		 AND USER_NAME
+      		</if>
+      		<if test="condition == 'title'">
+        		  AND BOARD_TITLE
+      		</if>
+      		<if test="condition == 'content'">
+        		 AND BOARD_CONTENT
+      		</if>
+   		    LIKE '%' || #{keyword} || '%'
+
+   </select>
+   
+   <select id="selectSearchList" parameterType="hashmap" resultMap="replyResultSet">
+   	      SELECT BOARD_NO, BOARD_TITLE, USER_ID, COUNT, CREATE_DATE
+     	  FROM BOARD B
+          JOIN MEMBER ON (BOARD_WRITER = USER_NO)
+          WHERE B.STATUS = 'Y'
+	      <choose>
+	         <when test = "condition =='writer'">
+	            AND USER_NAME
+	         </when>
+	         <when test = "condition =='title'">
+	            AND BOARD_TITLE
+	         </when>
+	         <when test = "condition =='content'">
+	            AND BOARD_CONTENT
+	         </when>
+	      </choose>
+	      LIKE '%' || #{keyword} || '%'
+   </select>
+   
+   
+   
+   
+</mapper>
